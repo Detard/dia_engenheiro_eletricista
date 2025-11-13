@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Dia do Eletricista!</title>
+    <!-- Importa a fonte usada no CSS original -->
+    <link href="https://fonts.googleapis.com/css?family=Patrick+Hand" rel="stylesheet">
+    <style>
+        /* Seu CSS original, com pequenos ajustes */
+        body {
+            background: black;
+            font-family: 'Patrick Hand', cursive;
+            /* Adicionado para centralizar a lâmpada */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita barras de rolagem */
+        }
+
+        .container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            top: 0;
+            /* Removido 'margin: 0 50%' que estava empurrando para fora da tela */
+        }
+
+        .interruptor {
+            background-color: #ff5050;
+            position: absolute;
+            height: 450px; /* Alterado de 350px */
+            border: 2px dotted white;
+            right: 30%;
+            top: -230px; /* Alterado de -130px */
+            z-index: 9999;
+            /* cursor: pointer;  REMOVIDO DAQUI */
+        }
+
+        .botao {
+            position: absolute;
+            left: -20px;
+            bottom: -25px;
+            border-radius: 70% 50% 50% 70%;
+            border-top: 4px solid #ff5050;
+            box-sizing: border-box;
+            border-left: 20px solid #ff5050;
+            border-right: 20px solid #ff5050;
+            border-bottom: 7px solid #ff5050;
+            transform: rotate(90deg);
+            cursor: pointer; /* ADICIONADO AQUI */
+        }
+
+        .botao::after {
+            position: absolute;
+            content: attr(data-text); /* Alterado de "Puxe-me!" para ler o atributo data-text */
+            width: 70px;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #fff;
+            transform: rotate(-90deg);
+            left: 15px;
+        }
+
+        .botao::before {
+            position: absolute;
+            content: ".";
+            width: 10px;
+            background-color: white;
+            color: white;
+            top: -15px;
+            left: 40px;
+            transform: rotate(45deg);
+        }
+
+        input#toggle {
+            display: none;
+        }
+
+        input#toggle ~ .menu {
+            display: block;
+        }
+
+        input#toggle:checked ~ .lamp1 {
+            position: absolute;
+            background: #fdb327;
+            box-shadow: 0 0 200px 50px #FFF, 0 0 10px 1px #ff6600, 0 0 500px 100px #ffe066, 0 0 500px 250px #ffcc00, 0 0 200px 230px #ff6600, 0 0 10px 999px #000;
+            transition: .1s;
+        }
+
+        input#toggle:checked ~ .lamp2 {
+            background: #fdb327;
+            transition: .1s;
+        }
+
+        input#toggle:checked ~ .resist-a {
+            background: #fff;
+            box-shadow: 0 0 20px 1px white;
+        }
+
+        input#toggle:checked ~ .resist-b {
+            background: #fff;
+            box-shadow: 0 0 20px 3px white;
+            animation: fio 0.2s infinite;
+        }
+
+
+
+        @keyframes interruptor {
+            from {
+                top: -14rem; /* Alterado de -8rem */
+            }
+            to {
+                top: -12rem; /* Alterado de -6rem */
+            }
+        }
+
+        @keyframes fio {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .lamp1 {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: grey;
+            top: 15px;
+            border-radius: 100% 95% 100% 30%;
+            box-sizing: border-box;
+            border-left: 0px solid #fdb327;
+            border-right: 0px solid #fdb327;
+            margin-left: -35.5px;
+            margin-top: 20px;
+            transform: rotate(135deg);
+        }
+
+        .lamp1-brilho::before {
+            content: "";
+            position: absolute;
+            width: 27px;
+            height: 60px;
+            border-left: 10px solid rgba(255, 255, 255, .40);
+            border-radius: 100%;
+            margin: -5px 37px;
+            transform: rotate(100deg);
+        }
+
+        .resist-a {
+            position: absolute;
+            width: 2px;
+            height: 70px;
+            background: darkgrey;
+            box-sizing: border-box;
+        }
+
+        .resist1 {
+            margin-left: 5px;
+            margin-top: 10px;
+            transform: rotate(10deg);
+        }
+
+        .resist2 {
+            margin-left: 25px;
+            margin-top: 10px;
+            transform: rotate(-10deg);
+        }
+
+        .resist-b {
+            position: absolute;
+            width: 16px;
+            height: 1px;
+            background: darkgrey;
+            box-sizing: border-box;
+            margin-top: 75px;
+        }
+
+        .resist3 {
+            margin-left: 0px;
+            transform: rotate(-15deg);
+        }
+
+        .resist4 {
+            margin-left: 16px;
+            transform: rotate(15deg);
+        }
+
+        .lamp2 {
+            position: absolute;
+            width: 35px;
+            height: 40px;
+            background: grey;
+            border-radius: 20%;
+            box-sizing: border-box;
+            margin-left: -2px;
+            margin-top: 2%;
+        }
+
+        .lamp3 {
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background: #383838;
+            top: -10px;
+        }
+        
+        /* Estilos para o player de vídeo */
+        #videoContainer {
+            display: none; /* Começa escondido */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 10000; /* Garante que fique por cima de tudo */
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- NOVO ESTILO (para a transição de brilho) --- */
+        #transitionOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #fff; /* A cor do "brilho" */
+            opacity: 0;
+            pointer-events: none; /* Permite clicar através dele */
+            z-index: 99999; /* Garante que fique no topo */
+            transition: opacity 0.8s ease-in-out; /* Duração da transição */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Seu HTML original da lâmpada -->
+    <div class="container" id="lampContainer">
+        <input type="checkbox" id="toggle">
+        
+        <!-- Alteração: O .interruptor é um div, e o .botao é a label "for" -->
+        <div class="interruptor">
+            <label class="botao" for="toggle" data-text="Puxe-me!">
+                <!-- O conteúdo do botão agora é gerado por ::after e ::before -->
+            </label>
+        </div>
+
+        <div class="lamp1">
+            <div class="lamp1-brilho">
+            </div>
+        </div>
+        <div class="lamp2">
+        </div>
+        <div class="resist-a resist1">
+        </div>
+        <div class="resist-a resist2">
+        </div>
+        <div class="resist-b resist3">
+        </div>
+        <div class="resist-b resist4">
+        </div>
+        <div class="lamp3">
+        </div>
+        <div class="thing">
+        </div>
+    </div>
+
+    <!-- Container do Vídeo (adicionado) -->
+    <div id="videoContainer">
+        <video id="videoPlayer">
+            <!-- O 'src' será definido via JavaScript -->
+        </video>
+    </div>
+
+    <!-- Elemento da Transição (adicionado) -->
+    <div id="transitionOverlay"></div>
+
+    <script>
+        // --- Início da Lógica de JavaScript ---
+
+        const videoList = [
+            'videos/video1.mp4',
+            'videos/video2.mp4',
+            'videos/video3.mp4',
+            'videos/video4.mp4',
+            'videos/video5.mp4'
+        ];
+
+        let currentVideoIndex = 0;
+        
+        // --- NOVO: Variáveis para detectar arrasto ---
+        let isDragging = false;
+        let dragStartY = 0;
+        let dragDistance = 0;
+
+        // Pegando os elementos do DOM
+        const toggleCheckbox = document.getElementById('toggle');
+        const lampContainer = document.getElementById('lampContainer');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const interruptor = document.querySelector('.interruptor'); // NOVO
+        
+        // --- NOVOS ELEMENTOS ---
+        const transitionOverlay = document.getElementById('transitionOverlay');
+        const pullCordButton = document.querySelector('.botao'); // Pegando o botão
+
+        // --- NOVO: Remove o comportamento padrão do label ---
+        pullCordButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
+        // --- NOVO: Detecta o início do arrasto ---
+        pullCordButton.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            dragStartY = e.clientY;
+            dragDistance = 0;
+            interruptor.style.animation = 'none'; // Remove animação anterior
+        });
+
+        // --- NOVO: Detecta o movimento durante o arrasto ---
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                dragDistance = e.clientY - dragStartY;
+                
+                // Aplica transformação visual ao interruptor baseado no arrasto
+                // Quanto mais arrasta, mais o interruptor "se move"
+                const moveAmount = Math.min(dragDistance, 30); // Limita a 30px
+                interruptor.style.transform = `translateY(${moveAmount}px)`;
+            }
+        });
+
+        // --- NOVO: Detecta o fim do arrasto ---
+        document.addEventListener('mouseup', () => {
+            if (isDragging && dragDistance > 20) { // Só ativa se arrastar mais de 20px
+                toggleCheckbox.checked = true;
+                toggleCheckbox.dispatchEvent(new Event('change'));
+            }
+            
+            // Volta o interruptor à posição original
+            interruptor.style.transform = 'translateY(0px)';
+            isDragging = false;
+            dragDistance = 0;
+        });
+
+        // 1. Ouve a mudança no checkbox (quando a lâmpada é "puxada")
+        toggleCheckbox.addEventListener('change', () => {
+            if (toggleCheckbox.checked) {
+                // A lâmpada ACENDEU
+                
+                // 1. Inicia a transição de "brilho" (fade-in to white)
+                transitionOverlay.style.pointerEvents = 'auto'; // Bloqueia cliques
+                transitionOverlay.style.opacity = '1';
+
+                // 2. Espera a transição (0.8s) acabar
+                setTimeout(() => {
+                    // 3. No PICO do brilho (tela branca), troca o conteúdo
+                    lampContainer.style.display = 'none';
+                    videoContainer.style.display = 'block';
+                    
+                    // 4. Define o vídeo e TOCA (mas ainda está coberto)
+                    videoPlayer.src = videoList[currentVideoIndex];
+                    videoPlayer.play();
+
+                    // 5. Inicia o "fade-out" para revelar o vídeo
+                    transitionOverlay.style.opacity = '0';
+                    
+                    // 6. Espera o fade-out (0.8s) acabar
+                    setTimeout(() => {
+                        transitionOverlay.style.pointerEvents = 'none'; // Libera cliques
+                    }, 800); // Mesmo tempo da transição
+
+                }, 800); // Mesmo tempo da transição
+            }
+        });
+
+        // 2. Ouve quando o vídeo TERMINA
+        videoPlayer.addEventListener('ended', () => {
+            // Esconde o vídeo e mostra a lâmpada
+            videoContainer.style.display = 'none';
+            lampContainer.style.display = 'block';
+            
+            // "Apaga" a lâmpada (desmarca o checkbox)
+            toggleCheckbox.checked = false;
+            
+            // Prepara o próximo vídeo (faz a volta na lista)
+            currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
+
+            // Muda o texto do botão
+            pullCordButton.dataset.text = 'Puxe-me novamente!';
+        });
+
+        // --- Fim da Lógica de JavaScript ---
+    </script>
+
+</body>
+</html>
