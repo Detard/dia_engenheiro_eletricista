@@ -550,6 +550,7 @@
             // Esconde o vídeo e mostra a lâmpada
             videoContainer.style.display = 'none';
             lampContainer.style.display = 'block';
+            fullscreenBtn.classList.remove('hidden'); // NOVO: Mostra o botão sempre que a lâmpada aparecer
             
             // "Apaga" a lâmpada (desmarca o checkbox)
             toggleCheckbox.checked = false;
@@ -565,7 +566,6 @@
             // --- NOVO: Mostra o seletor se todos os vídeos já foram tocados ---
             if (allVideosPlayed) {
                 videoSelector.classList.remove('hidden');
-                fullscreenBtn.classList.remove('hidden'); // NOVO
             }
 
             // Muda o texto do botão
@@ -586,6 +586,22 @@
                 // 3. Define o índice do vídeo a ser tocado
                 const selectedIndex = parseInt(e.target.dataset.index, 10);
                 currentVideoIndex = selectedIndex;
+            }
+        });
+
+// --- NOVO: Lógica para o botão de tela cheia ---
+        fullscreenBtn.addEventListener('click', async () => {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+                // Tenta travar a orientação em paisagem, ideal para os vídeos
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape-primary');
+                }
+            } catch (err) {
+                // O erro é esperado se o usuário negar a permissão ou o navegador não suportar
+                console.error("Erro ao tentar entrar em tela cheia:", err);
             }
         });
 
