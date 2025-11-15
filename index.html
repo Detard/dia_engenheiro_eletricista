@@ -591,17 +591,30 @@
 
 // --- NOVO: Lógica para o botão de tela cheia ---
         fullscreenBtn.addEventListener('click', async () => {
+            // Esconde o botão assim que for clicado
+            fullscreenBtn.classList.add('hidden');
+
             try {
                 if (document.documentElement.requestFullscreen) {
                     await document.documentElement.requestFullscreen();
                 }
                 // Tenta travar a orientação em paisagem, ideal para os vídeos
-                if (screen.orientation && screen.orientation.lock) {
+                if (screen.orientation?.lock) { // Usando optional chaining para mais segurança
                     await screen.orientation.lock('landscape-primary');
                 }
             } catch (err) {
                 // O erro é esperado se o usuário negar a permissão ou o navegador não suportar
                 console.error("Erro ao tentar entrar em tela cheia:", err);
+                // Se der erro, mostra o botão novamente
+                fullscreenBtn.classList.remove('hidden');
+            }
+        });
+
+        // --- NOVO: Lógica para reexibir o botão ao sair da tela cheia ---
+        document.addEventListener('fullscreenchange', () => {
+            // Se não há mais elemento em tela cheia (document.fullscreenElement é null), mostra o botão
+            if (!document.fullscreenElement) {
+                fullscreenBtn.classList.remove('hidden');
             }
         });
 
