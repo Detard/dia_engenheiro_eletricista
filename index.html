@@ -241,6 +241,62 @@
             z-index: 99999; /* Garante que fique no topo */
             transition: opacity 0.8s ease-in-out; /* Duração da transição */
         }
+
+        /* --- NOVO: Estilos para orientação em modo retrato no celular --- */
+        #rotate-device-overlay {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            color: #fff;
+            z-index: 100000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            #rotate-device-overlay {
+                display: flex; /* Mostra o aviso em modo retrato */
+            }
+        }
+
+        /* --- NOVO: Estilos para o seletor de vídeo --- */
+        #video-selector {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        #video-selector.hidden {
+            display: none;
+        }
+
+        .video-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 80, 80, 0.8);
+            border: 2px solid white;
+            color: white;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s; /* NOVO: para suavizar a seleção */
+        }
+
+        /* NOVO: Estilo para o botão selecionado */
+        .video-btn.selected {
+            background-color: #e28686; /* Cor mais viva */
+            transform: scale(1.1); /* Um pouco maior */
+        }
     </style>
 </head>
 <body>
@@ -286,6 +342,21 @@
     <!-- Elemento da Transição (adicionado) -->
     <div id="transitionOverlay"></div>
 
+    <!-- NOVO: Overlay para pedir rotação do dispositivo -->
+    <div id="rotate-device-overlay">
+        <h1>Por favor, gire seu dispositivo</h1>
+        <p>Esta experiência foi projetada para visualização em modo paisagem (horizontal).</p>
+    </div>
+
+    <!-- NOVO: Seletor de vídeo -->
+    <div id="video-selector" class="hidden">
+        <button class="video-btn" data-index="0">1</button>
+        <button class="video-btn" data-index="1">2</button>
+        <button class="video-btn" data-index="2">3</button>
+        <button class="video-btn" data-index="3">4</button>
+        <button class="video-btn" data-index="4">5</button>
+    </div>
+
     <script>
         // --- Início da Lógica de JavaScript ---
 
@@ -298,7 +369,11 @@
         ];
 
         let currentVideoIndex = 0;
+        // --- NOVO: Rastreia vídeos já tocados e se o seletor deve aparecer ---
+        const playedVideos = new Set();
+        let allVideosPlayed = false;
         
+
         // --- NOVO: Variáveis para detectar arrasto ---
         let isDragging = false;
         let dragStartY = 0;
@@ -314,6 +389,7 @@
         // --- NOVOS ELEMENTOS ---
         const transitionOverlay = document.getElementById('transitionOverlay');
         const pullCordButton = document.querySelector('.botao'); // Pegando o botão
+        const videoSelector = document.getElementById('video-selector'); // NOVO
 
         // --- NOVO: Remove o comportamento padrão do label ---
         pullCordButton.addEventListener('click', (e) => {
@@ -354,6 +430,33 @@
             isDragging = false;
             dragDistance = 0;
         });
+        
+        // --- NOVO: Adiciona eventos de toque para funcionar no celular ---
+        pullCordButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            dragStartY = e.touches[0].clientY; // Pega a posição do primeiro toque
+            dragDistance = 0;
+            interruptor.style.animation = 'none';
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                dragDistance = e.touches[0].clientY - dragStartY;
+                const moveAmount = Math.min(dragDistance, 30);
+                interruptor.style.transform = `translateY(${moveAmount}px)`;
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isDragging && dragDistance > 20) {
+                toggleCheckbox.checked = true;
+                toggleCheckbox.dispatchEvent(new Event('change'));
+            }
+            interruptor.style.transform = 'translateY(0px)';
+            isDragging = false;
+            dragDistance = 0;
+        });
 
         // 1. Ouve a mudança no checkbox (quando a lâmpada é "puxada")
         toggleCheckbox.addEventListener('change', () => {
@@ -363,6 +466,9 @@
                 // 1. Inicia a transição de "brilho" (fade-in to white)
                 transitionOverlay.style.pointerEvents = 'auto'; // Bloqueia cliques
                 transitionOverlay.style.opacity = '1';
+
+                // --- NOVO: Esconde o seletor durante a transição/vídeo ---
+                videoSelector.classList.add('hidden');
 
                 // 2. Espera a transição (0.8s) acabar
                 setTimeout(() => {
@@ -388,20 +494,74 @@
 
         // 2. Ouve quando o vídeo TERMINA
         videoPlayer.addEventListener('ended', () => {
+            // --- NOVO: Adiciona o vídeo que acabou de tocar ao set de tocados ---
+            playedVideos.add(currentVideoIndex);
+            if (playedVideos.size === videoList.length) {
+                allVideosPlayed = true;
+            }
+
             // Esconde o vídeo e mostra a lâmpada
             videoContainer.style.display = 'none';
             lampContainer.style.display = 'block';
             
             // "Apaga" a lâmpada (desmarca o checkbox)
             toggleCheckbox.checked = false;
-            
-            // Prepara o próximo vídeo (faz a volta na lista)
-            currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
+
+            // --- LÓGICA ALTERADA: Prepara o próximo vídeo ---
+            if (!allVideosPlayed) {
+                // Se ainda não tocou todos, avança para o próximo
+                currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
+            }
+            // Se já tocou todos, `currentVideoIndex` permanece o que foi selecionado pelo botão.
+            // Se nenhum foi selecionado, ele repetirá o último.
+
+            // --- NOVO: Mostra o seletor se todos os vídeos já foram tocados ---
+            if (allVideosPlayed) {
+                videoSelector.classList.remove('hidden');
+            }
 
             // Muda o texto do botão
             pullCordButton.dataset.text = 'Puxe-me novamente!';
         });
 
+        // --- NOVO: Lógica para os botões de seleção de vídeo ---
+        videoSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('video-btn')) {
+                // --- LÓGICA ALTERADA para feedback visual ---
+                // 1. Remove a classe 'selected' de todos os botões
+                const allButtons = videoSelector.querySelectorAll('.video-btn');
+                allButtons.forEach(btn => btn.classList.remove('selected'));
+
+                // 2. Adiciona a classe 'selected' apenas ao botão clicado
+                e.target.classList.add('selected');
+
+                // 3. Define o índice do vídeo a ser tocado
+                const selectedIndex = parseInt(e.target.dataset.index, 10);
+                currentVideoIndex = selectedIndex;
+            }
+        });
+
+        // --- NOVO: Lógica para tela cheia e rotação em celulares ---
+        let firstInteraction = false;
+        const enterFullScreenAndLandscape = async () => {
+            if (firstInteraction) return;
+            firstInteraction = true;
+
+            try {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    if (document.documentElement.requestFullscreen) {
+                        await document.documentElement.requestFullscreen();
+                    }
+                    if (screen.orientation && screen.orientation.lock) {
+                        await screen.orientation.lock('landscape-primary');
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao tentar forçar tela cheia/paisagem:", err);
+            }
+        };
+        document.body.addEventListener('touchstart', enterFullScreenAndLandscape, { once: true });
         // --- Fim da Lógica de JavaScript ---
     </script>
 
