@@ -260,7 +260,7 @@
             text-align: center;
         }
 
-        @media (max-width: 768px) and (orientation: portrait) {
+        @media (max-width: 932px) and (orientation: portrait) {
             #rotate-device-overlay {
                 display: flex; /* Mostra o aviso em modo retrato */
             }
@@ -297,6 +297,40 @@
         .video-btn.selected {
             background-color: #e28686; /* Cor mais viva */
             transform: scale(1.1); /* Um pouco maior */
+        }
+
+        /* --- NOVO: Estilos para o botão de tela cheia --- */
+        #fullscreen-btn {
+            display: none; /* Escondido por padrão, mostrado via media query */
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 35px;  /* Alterado para ser menor */
+            height: 35px; /* Alterado para ser menor */
+            background-color: rgba(255, 80, 80, 0.8);
+            border: 2px solid white;
+            border-radius: 50%;
+            z-index: 1001; /* Acima do seletor de vídeo */
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* NOVO: Ajusta o tamanho do ícone SVG dentro do botão */
+        #fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        #fullscreen-btn.hidden {
+            display: none !important;
+        }
+
+        /* Mostra o botão apenas em telas de celular */
+        @media (max-width: 932px) {
+            #fullscreen-btn {
+                display: flex;
+            }
         }
     </style>
 </head>
@@ -358,6 +392,16 @@
         <button class="video-btn" data-index="4">5</button>
     </div>
 
+    <!-- NOVO: Botão de tela cheia para celular -->
+    <button id="fullscreen-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 3H21V9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21H3V15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 3L14 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 21L10 14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
     <script>
         // --- Início da Lógica de JavaScript ---
 
@@ -391,6 +435,7 @@
         const transitionOverlay = document.getElementById('transitionOverlay');
         const pullCordButton = document.querySelector('.botao'); // Pegando o botão
         const videoSelector = document.getElementById('video-selector'); // NOVO
+        const fullscreenBtn = document.getElementById('fullscreen-btn'); // NOVO
 
         // --- NOVO: Remove o comportamento padrão do label ---
         pullCordButton.addEventListener('click', (e) => {
@@ -470,6 +515,7 @@
 
                 // --- NOVO: Esconde o seletor durante a transição/vídeo ---
                 videoSelector.classList.add('hidden');
+                fullscreenBtn.classList.add('hidden'); // NOVO
 
                 // 2. Espera a transição (0.8s) acabar
                 setTimeout(() => {
@@ -519,6 +565,7 @@
             // --- NOVO: Mostra o seletor se todos os vídeos já foram tocados ---
             if (allVideosPlayed) {
                 videoSelector.classList.remove('hidden');
+                fullscreenBtn.classList.remove('hidden'); // NOVO
             }
 
             // Muda o texto do botão
@@ -542,27 +589,6 @@
             }
         });
 
-        // --- NOVO: Lógica para tela cheia e rotação em celulares ---
-        let firstInteraction = false;
-        const enterFullScreenAndLandscape = async () => {
-            if (firstInteraction) return;
-            firstInteraction = true;
-
-            try {
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                    if (document.documentElement.requestFullscreen) {
-                        await document.documentElement.requestFullscreen();
-                    }
-                    if (screen.orientation && screen.orientation.lock) {
-                        await screen.orientation.lock('landscape-primary');
-                    }
-                }
-            } catch (err) {
-                console.error("Erro ao tentar forçar tela cheia/paisagem:", err);
-            }
-        };
-        document.body.addEventListener('touchstart', enterFullScreenAndLandscape, { once: true });
         // --- Fim da Lógica de JavaScript ---
     </script>
 
