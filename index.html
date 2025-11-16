@@ -26,6 +26,7 @@
             width: 400px;
             height: 400px;
             top: 0;
+            z-index: 1; /* NOVO: Garante que a lâmpada fique atrás dos overlays */
             /* Removido 'margin: 0 50%' que estava empurrando para fora da tela */
         }
 
@@ -332,6 +333,26 @@
                 display: flex;
             }
         }
+
+        /* --- NOVO: Estilos para o overlay de forçar tela cheia --- */
+        #force-fullscreen-overlay {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85); /* Fundo preto semitransparente */
+            z-index: 1000; /* Abaixo do botão de tela cheia (que é 1001) */
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            font-size: 1.3rem;
+        }
+
     </style>
 </head>
 <body>
@@ -402,6 +423,11 @@
         </svg>
     </button>
 
+    <!-- NOVO: Overlay para incentivar a tela cheia em celulares -->
+    <div id="force-fullscreen-overlay">
+        <p>Para uma melhor experiência, pressione o botão de tela cheia!</p>
+    </div>
+
     <script>
         // --- Início da Lógica de JavaScript ---
 
@@ -436,6 +462,7 @@
         const pullCordButton = document.querySelector('.botao'); // Pegando o botão
         const videoSelector = document.getElementById('video-selector'); // NOVO
         const fullscreenBtn = document.getElementById('fullscreen-btn'); // NOVO
+        const forceFullscreenOverlay = document.getElementById('force-fullscreen-overlay'); // NOVO
 
         // --- NOVO: Remove o comportamento padrão do label ---
         pullCordButton.addEventListener('click', (e) => {
@@ -516,6 +543,7 @@
                 // --- NOVO: Esconde o seletor durante a transição/vídeo ---
                 videoSelector.classList.add('hidden');
                 fullscreenBtn.classList.add('hidden'); // NOVO
+                forceFullscreenOverlay.style.display = 'none'; // NOVO
 
                 // 2. Espera a transição (0.8s) acabar
                 setTimeout(() => {
@@ -552,7 +580,7 @@
             lampContainer.style.display = 'block';
             // NOVO: Mostra o botão apenas se NÃO estiver em tela cheia
             if (!document.fullscreenElement) {
-                fullscreenBtn.classList.remove('hidden');
+                showControlsForMobile(); // NOVO
             }
             
             // "Apaga" a lâmpada (desmarca o checkbox)
@@ -595,7 +623,7 @@
 // --- NOVO: Lógica para o botão de tela cheia ---
         fullscreenBtn.addEventListener('click', async () => {
             // Esconde o botão assim que for clicado
-            fullscreenBtn.classList.add('hidden');
+            // fullscreenBtn.classList.add('hidden'); // REMOVIDO: O evento fullscreenchange cuidará disso
 
             try {
                 if (document.documentElement.requestFullscreen) {
@@ -609,17 +637,36 @@
                 // O erro é esperado se o usuário negar a permissão ou o navegador não suportar
                 console.error("Erro ao tentar entrar em tela cheia:", err);
                 // Se der erro, mostra o botão novamente
-                fullscreenBtn.classList.remove('hidden');
+                showControlsForMobile();
             }
         });
 
         // --- NOVO: Lógica para reexibir o botão ao sair da tela cheia ---
         document.addEventListener('fullscreenchange', () => {
-            // Se não há mais elemento em tela cheia (document.fullscreenElement é null), mostra o botão
-            if (!document.fullscreenElement) {
-                fullscreenBtn.classList.remove('hidden');
+            if (document.fullscreenElement) {
+                // Entrou em tela cheia: esconde o overlay e o botão
+                forceFullscreenOverlay.style.display = 'none';
+                fullscreenBtn.classList.add('hidden');
+            } else {
+                // Saiu da tela cheia: mostra os controles (se for celular)
+                showControlsForMobile();
             }
         });
+
+        // --- NOVA FUNÇÃO: Controla a exibição dos botões e overlay no celular ---
+        function showControlsForMobile() {
+            // Verifica se a largura da tela corresponde à de um celular (mesma regra do CSS)
+            if (window.matchMedia("(max-width: 932px)").matches) {
+                forceFullscreenOverlay.style.display = 'flex';
+                fullscreenBtn.classList.remove('hidden');
+            } else {
+                forceFullscreenOverlay.style.display = 'none';
+            }
+        }
+
+        // --- NOVO: Executa a verificação quando a página carrega ---
+        window.addEventListener('load', showControlsForMobile);
+        window.addEventListener('resize', showControlsForMobile);
 
         // --- Fim da Lógica de JavaScript ---
     </script>
