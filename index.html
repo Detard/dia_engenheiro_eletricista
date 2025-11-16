@@ -550,7 +550,10 @@
             // Esconde o vídeo e mostra a lâmpada
             videoContainer.style.display = 'none';
             lampContainer.style.display = 'block';
-            fullscreenBtn.classList.remove('hidden'); // NOVO: Mostra o botão sempre que a lâmpada aparecer
+            // NOVO: Mostra o botão apenas se NÃO estiver em tela cheia
+            if (!document.fullscreenElement) {
+                fullscreenBtn.classList.remove('hidden');
+            }
             
             // "Apaga" a lâmpada (desmarca o checkbox)
             toggleCheckbox.checked = false;
