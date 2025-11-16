@@ -656,7 +656,8 @@
         // --- NOVA FUNÇÃO: Controla a exibição dos botões e overlay no celular ---
         function showControlsForMobile() {
             // Verifica se a largura da tela corresponde à de um celular (mesma regra do CSS)
-            if (window.matchMedia("(max-width: 932px)").matches) {
+            // NOVO: Adiciona a verificação para garantir que não está em tela cheia
+            if (window.matchMedia("(max-width: 932px)").matches && !document.fullscreenElement) {
                 forceFullscreenOverlay.style.display = 'flex';
                 fullscreenBtn.classList.remove('hidden');
             } else {
